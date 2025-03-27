@@ -1,12 +1,32 @@
 import React from "react";
-import NavBar from "./components/NavBar";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Rooms from "./pages/Rooms";
+import Services from "./pages/Services";
+import AboutUs from "./pages/AboutUs";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/rooms",
+    element: <Rooms />,
+  },
+  {
+    path: "/services",
+    element: <Services />,
+  },
+  {
+    path: "/about-us",
+    element: <AboutUs />,
+  },
+]);
 
 const App = () => {
-  return (
-    <>
-      <NavBar></NavBar>
-    </>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;
