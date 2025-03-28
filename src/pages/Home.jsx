@@ -4,12 +4,12 @@ import Hero from "../components/Hero";
 import AvailabilityChecker from "../components/AvailabilityChecker";
 import Description from "../components/Description";
 import ShortBio from "../components/ShortBio";
-import Navbar from "../components/Navbar";
+import NavBar from "../components/NavBar";
 
 const Home = () => {
   return (
     <main className="relative min-h-screen w-screen overflow-x-hidden">
-      <Navbar />
+      <NavBar />
       <Hero />
       <AvailabilityChecker />
       <ShortBio />
