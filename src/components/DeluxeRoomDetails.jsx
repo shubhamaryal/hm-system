@@ -6,7 +6,7 @@ const hotelRooms = [
   {
     imageUrl:
       "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800",
-    title: "Solo Retreat",
+    title: "Solo0 Retreat",
     occupancy: "1 Adult",
     rating: "4.2",
     amenities: [
@@ -61,14 +61,14 @@ const hotelRooms = [
   },
 ];
 
-function ClassicRoomDetails() {
+function DeluxeRoomDetails() {
   return (
     <>
       <Navbar />
       <div className="flex items-center justify-between mx-90 mt-46">
         <div>Button for return</div>
         <div className="text-5xl text-gray-600">
-          <span className="text-amber-500">Classic</span> Rooms
+          <span className="text-amber-500">Deluxe</span> Rooms
         </div>
       </div>
       <div className="min-h-screen flex flex-col items-center justify-start p-4 gap-6 mt-16">
@@ -80,4 +80,4 @@ function ClassicRoomDetails() {
   );
 }
 
-export default ClassicRoomDetails;
+export default DeluxeRoomDetails;

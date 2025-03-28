@@ -1,6 +1,5 @@
 import React from "react";
 import { Wifi, Car, Bath, Star } from "lucide-react";
-import NavBar from "./NavBar";
 
 function RoomCard({
   imageUrl,
