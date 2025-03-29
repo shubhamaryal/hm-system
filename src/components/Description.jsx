@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 
 function HotelAccommodation() {
+
+    const navigate = useNavigate();
+  
+    const handleViewRoomClick = () => {
+      navigate("/rooms"); 
+    };
+
   const images = [
     {
       src: "delux-room/1.jpeg",
@@ -61,7 +69,7 @@ function HotelAccommodation() {
           </p>
 
           <div className="pt-2">
-            <button className="inline-block px-6 py-3 bg-amber-500 text-white font-medium hover:bg-amber-600 transition-colors">
+            <button onClick={handleViewRoomClick} className="inline-block px-6 py-3 rounded-lg cursor-pointer bg-amber-500 border-1 border-amber-500 text-white font-medium hover:bg-white hover:text-amber-500 transition-colors">
               View Rooms
             </button>
           </div>

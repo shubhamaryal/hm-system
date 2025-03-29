@@ -1,5 +1,5 @@
 import React from "react";
-import { Wifi, Car, Bath, Star } from "lucide-react";
+import { Wifi, Car, Bath } from "lucide-react";
 
 function RoomCard({
   imageUrl,
@@ -9,7 +9,10 @@ function RoomCard({
   amenities,
   price,
   reviews,
+  handleReserveClick
 }) {
+
+
   return (
     <div className="bg-white rounded-3xl shadow-[0_0_30px_rgba(156,163,175,1)] hover:shadow-[0_0_20px_rgba(234,179,8,0.7)] duration-300 transition-shadow overflow-hidden max-w-[1100px] w-full mb-6">
       <div className="flex flex-col md:flex-row">
@@ -64,7 +67,7 @@ function RoomCard({
               </span>
               <span className="text-gray-600">/ night</span>
             </div>
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            <button onClick={handleReserveClick} className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors">
               Reserve Now
             </button>
           </div>

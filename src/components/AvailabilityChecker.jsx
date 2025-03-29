@@ -60,7 +60,7 @@ const AvailabilityChecker = () => {
           </select>
         </div>
         <div>
-          <button className="bg-amber-500 text-white px-6 py-3 hover:bg-white hover:text-amber-500 border border-amber-500 transition duration-300">
+          <button className="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-white hover:text-amber-500 border border-amber-500 transition duration-300">
             Check Availability
           </button>
         </div>

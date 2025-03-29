@@ -31,7 +31,7 @@ const Navbar = () => {
           </NavLink>
         ))}
         <div className="flex items-center gap-3.25 text-[16px] font-bold">
-          <button className="px-5 py-2.5 cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-gray-100 transition duration-300">
+          <button className="px-5 py-2.5 cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300">
             Sign Up
           </button>
           <button className="px-5 py-2.5 cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300">

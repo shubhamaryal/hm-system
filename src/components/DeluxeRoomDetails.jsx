@@ -1,6 +1,7 @@
 import React from "react";
 import RoomCard from "./RoomCard";
 import Navbar from "./NavBar";
+import { useNavigate } from "react-router-dom";
 
 const hotelRooms = [
   {
@@ -62,6 +63,8 @@ const hotelRooms = [
 ];
 
 function DeluxeRoomDetails() {
+  const navigate = useNavigate();
+
   return (
     <>
       <Navbar />
@@ -73,7 +76,15 @@ function DeluxeRoomDetails() {
       </div>
       <div className="min-h-screen flex flex-col items-center justify-start p-4 gap-6 mt-16">
         {hotelRooms.map((room, index) => (
-          <RoomCard key={index} {...room} />
+          <RoomCard
+            key={index}
+            {...room}
+            handleReserveClick={() =>
+              navigate(
+                `/rooms/deluxe/${room.title.replace(/\s+/g, "-").toLowerCase()}`
+              )
+            }
+          />
         ))}
       </div>
     </>
