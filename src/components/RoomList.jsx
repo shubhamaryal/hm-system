@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { MoveRight } from "lucide-react";
 
 const RoomList = ({ number, title, image }) => {
   return (
     <>
       <div className="flex flex-col md:flex-row items-center mb-8">
         <div className="md:w-1/2 relative">
-          <div className="overflow-hidden rounded-lg transition-transform duration-300 ease-in-out transform hover:scale-104">
+          <div className="overflow-hidden rounded-lg transition-transform duration-300 ease-in-out transform hover:scale-104 max-w-fit">
             <img
               src={image}
               alt={`${title} hotel room`}
@@ -26,10 +27,9 @@ const RoomList = ({ number, title, image }) => {
             </p>
             <Link
               to={`/rooms/${title.toLowerCase()}`}
-              className="text-amber-400 hover:text-amber-500"
+              className="text-amber-400 hover:text-amber-500 scale-200 ml-48 mt-5"
             >
-              {/* need to add the arrow icon */}
-              Learn More
+              <MoveRight />
             </Link>
           </div>
         </div>

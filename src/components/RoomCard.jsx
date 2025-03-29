@@ -9,10 +9,11 @@ function RoomCard({
   amenities,
   price,
   reviews,
-  handleReserveClick
+  handleReserveClick,
+  ratingText,
+  ratingColor,
+  ratingBg,
 }) {
-
-
   return (
     <div className="bg-white rounded-3xl shadow-[0_0_30px_rgba(156,163,175,1)] hover:shadow-[0_0_20px_rgba(234,179,8,0.7)] duration-300 transition-shadow overflow-hidden max-w-[1100px] w-full mb-6">
       <div className="flex flex-col md:flex-row">
@@ -34,13 +35,17 @@ function RoomCard({
             </div>
             <div className="flex items-center">
               <div className="flex flex-col items-end">
-                <span className="text-blue-600 font-medium">Good</span>
+                <span className={`${ratingColor} font-medium`}>
+                  {ratingText}
+                </span>
 
                 <p className="text-sm text-gray-500">{reviews} reviews</p>
               </div>
 
-              <div className="flex items-center ml-3 bg-blue-100 px-4 py-1 rounded-xl">
-                <span className="text-blue-700 font-semibold">{rating}</span>
+              <div
+                className={`flex items-center ml-3 ${ratingBg} px-4 py-1 rounded-xl`}
+              >
+                <span className={`${ratingColor} font-semibold`}>{rating}</span>
               </div>
             </div>
           </div>
@@ -67,7 +72,10 @@ function RoomCard({
               </span>
               <span className="text-gray-600">/ night</span>
             </div>
-            <button onClick={handleReserveClick} className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors">
+            <button
+              onClick={handleReserveClick}
+              className="bg-gray-600 text-white px-6 py-3 rounded-lg cursor-pointer font-medium hover:bg-gray-700 transition-colors"
+            >
               Reserve Now
             </button>
           </div>

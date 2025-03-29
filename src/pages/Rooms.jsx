@@ -1,6 +1,7 @@
 import React from "react";
 import NavBar from "../components/NavBar";
 import RoomList from "../components/RoomList";
+import { MoveDownRight } from "lucide-react";
 
 const Rooms = () => {
   return (
@@ -25,10 +26,9 @@ const Rooms = () => {
             </p>
             <div className="ml-40">
               <a
-                href="#"
-                className="text-lg text-amber-400 hover:text-amber-500 transition-colors"
+                className="text-lg text-amber-400 transition-colors flex gap-2"
               >
-                More Info
+                More Info <MoveDownRight className="w-4" />
               </a>
             </div>
           </div>
