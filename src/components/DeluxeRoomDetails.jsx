@@ -2,6 +2,7 @@ import React from "react";
 import RoomCard from "./RoomCard";
 import Navbar from "./NavBar";
 import { useNavigate } from "react-router-dom";
+import { MoveLeft } from "lucide-react";
 
 const hotelRooms = [
   {
@@ -65,11 +66,18 @@ const hotelRooms = [
 function DeluxeRoomDetails() {
   const navigate = useNavigate();
 
+  const handleArrowClick = () => {
+    navigate("/rooms");
+  };
+
   return (
     <>
       <Navbar />
       <div className="flex items-center justify-between mx-90 mt-46">
-        <div>Button for return</div>
+        <MoveLeft
+          onClick={handleArrowClick}
+          className="h-10 cursor-pointer hover:text-amber-400"
+        />
         <div className="text-5xl text-gray-600">
           <span className="text-amber-500">Deluxe</span> Rooms
         </div>
