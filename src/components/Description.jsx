@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 function HotelAccommodation() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
-  
-    const handleViewRoomClick = () => {
-      navigate("/rooms"); 
-    };
+  const handleViewRoomClick = () => {
+    navigate("/rooms");
+  };
 
   const images = [
     {
@@ -31,13 +30,13 @@ function HotelAccommodation() {
       setCurrentImageIndex((prevIndex) =>
         prevIndex === images.length - 1 ? 0 : prevIndex + 1
       );
-    }, 3000); 
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [images.length]);
 
   return (
-    <div className="absolute w-full max-w-7xl mx-auto top-350 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+    <div className="absolute w-full max-w-7xl mx-auto top-410 sm:top-330 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="flex flex-col md:flex-row items-center gap-18 p-4 md:p-6">
         <div className="w-full md:w-200 rounded-lg overflow-hidden relative h-[400px]">
           {images.map((image, index) => (
@@ -69,7 +68,10 @@ function HotelAccommodation() {
           </p>
 
           <div className="pt-2">
-            <button onClick={handleViewRoomClick} className="inline-block px-6 py-3 rounded-lg cursor-pointer bg-amber-500 border-1 border-amber-500 text-white font-medium hover:bg-white hover:text-amber-500 transition-colors">
+            <button
+              onClick={handleViewRoomClick}
+              className="inline-block px-6 py-3 rounded-lg cursor-pointer bg-amber-500 border-1 border-amber-500 text-white font-medium hover:bg-white hover:text-amber-500 transition-colors"
+            >
               View Rooms
             </button>
           </div>

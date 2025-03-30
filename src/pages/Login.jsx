@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -79,7 +79,9 @@ const Login = () => {
                 )}
               </button>
               {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password.message}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -91,12 +93,9 @@ const Login = () => {
             </button>
           </form>
           <p className="mt-8 text-center text-lg">
-            Don't have an account?{" "}
-            <a
-              href="/signup"
-              className="text-amber-500 font-medium hover:underline"
-            >
-              Sign Up
+            Forgot your password?{" "}
+            <a className="text-amber-500 font-medium hover:underline cursor-pointer">
+              Click here
             </a>
           </p>
         </div>

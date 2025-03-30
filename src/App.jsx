@@ -1,11 +1,9 @@
-import React from "react";
 import {
   createBrowserRouter,
   RouterProvider,
   useParams,
   Navigate,
 } from "react-router-dom";
-
 import Home from "./pages/Home";
 import Rooms from "./pages/Rooms";
 import Services from "./pages/Services";
@@ -15,6 +13,7 @@ import SignUp from "./pages/SignUp";
 import ClassicRoomDetails from "./components/ClassicRoomDetails";
 import DeluxeRoomDetails from "./components/DeluxeRoomDetails";
 import SuiteRoomDetails from "./components/SuiteRoomDetails";
+import ReservePage from "./components/ReservePage";
 
 function RoomDetails() {
   const { roomType } = useParams();
@@ -28,6 +27,11 @@ function RoomDetails() {
   }
 
   return <Navigate to="/rooms" />;
+}
+
+function RoomReservation() {
+  const { roomType, roomName } = useParams();
+  return <ReservePage roomType={roomType} roomName={roomName} />;
 }
 
 const router = createBrowserRouter([
@@ -50,6 +54,10 @@ const router = createBrowserRouter([
   {
     path: "/rooms/:roomType",
     element: <RoomDetails />,
+  },
+  {
+    path: "/rooms/:roomType/:roomName",
+    element: <RoomReservation />,
   },
   {
     path: "/services",

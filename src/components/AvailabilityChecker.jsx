@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const AvailabilityChecker = () => {
   const [checkInDate, setCheckInDate] = useState("");
@@ -7,9 +7,9 @@ const AvailabilityChecker = () => {
   const [children, setChildren] = useState(0);
 
   return (
-    <div className="absolute left-1/2 transform -translate-x-1/2 top-[660px] w-[856px] h-[80px] bg-[#F4DEC1] flex items-center justify-between px-6">
-      <div className="flex items-center space-x-4 w-full">
-        <div className="flex-1">
+    <div className="absolute left-1/2 transform -translate-x-1/2 top-[580px] w-full max-w-[856px] h-auto sm:h-[80px] bg-[#F4DEC1] flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 sm:py-0">
+      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full">
+        <div className="w-full sm:flex-1">
           <input
             type="date"
             value={checkInDate}
@@ -18,7 +18,7 @@ const AvailabilityChecker = () => {
             className="w-full p-2 border-none bg-white text-gray-800 focus:outline-none"
           />
         </div>
-        <div className="flex-1">
+        <div className="w-full sm:flex-1">
           <input
             type="date"
             value={checkOutDate}
@@ -27,7 +27,7 @@ const AvailabilityChecker = () => {
             className="w-full p-2 border-none bg-white text-gray-800 focus:outline-none"
           />
         </div>
-        <div className="flex-1">
+        <div className="w-full sm:flex-1">
           <select
             value={adults}
             onChange={(e) => setAdults(Number(e.target.value))}
@@ -43,7 +43,7 @@ const AvailabilityChecker = () => {
             ))}
           </select>
         </div>
-        <div className="flex-1">
+        <div className="w-full sm:flex-1">
           <select
             value={children}
             onChange={(e) => setChildren(Number(e.target.value))}
@@ -59,8 +59,8 @@ const AvailabilityChecker = () => {
             ))}
           </select>
         </div>
-        <div>
-          <button className="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-white hover:text-amber-500 border border-amber-500 transition duration-300">
+        <div className="w-full sm:w-auto">
+          <button className="w-full sm:w-auto bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-white hover:text-amber-500 border border-amber-500 transition duration-300">
             Check Availability
           </button>
         </div>
