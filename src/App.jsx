@@ -14,6 +14,7 @@ import ClassicRoomDetails from "./components/ClassicRoomDetails";
 import DeluxeRoomDetails from "./components/DeluxeRoomDetails";
 import SuiteRoomDetails from "./components/SuiteRoomDetails";
 import ReservePage from "./components/ReservePage";
+import BookingPage from "./pages/BookingPage";
 
 function RoomDetails() {
   const { roomType } = useParams();
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
   {
     path: "/rooms/:roomType/:roomName",
     element: <RoomReservation />,
+  },
+  {
+    path: "/rooms/:roomType/:roomName/booking",
+    element: <BookingPage />,
   },
   {
     path: "/services",

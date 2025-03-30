@@ -4,7 +4,7 @@ import { MoveDownRight } from "lucide-react";
 
 const Rooms = () => {
   return (
-    <main className="relative min-h-screen w-screen overflow-x-hidden">
+    <main className="relative min-h-screen overflow-x-hidden">
       <NavBar />
       <div className="container mx-auto px-4 py-12 max-w-8xl mt-36">
         <div className="flex flex-col md:flex-row gap-12 mb-2">

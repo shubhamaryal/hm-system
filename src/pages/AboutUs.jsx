@@ -3,7 +3,7 @@ import { Users, Award, Clock, MapPin } from "lucide-react";
 
 const AboutUs = () => {
   return (
-    <main className="relative min-h-screen w-screen overflow-x-hidden">
+    <main className="relative min-h-screen overflow-x-hidden">
       <NavBar />
       <div className="container mx-auto px-4 py-12 max-w-7xl mt-36">
         <h1 className="text-4xl md:text-5xl font-light text-center mb-8">
@@ -53,22 +53,22 @@ const AboutUs = () => {
             <div className="md:w-1/2">
               <h3 className="text-xl font-semibold mb-3">Location</h3>
               <p className="text-gray-700 mb-4">
-                123 Hotel Street, City Center
+                location name
               </p>
-              <p className="text-gray-700 mb-4">Metro City, 12345</p>
+              <p className="text-gray-700 mb-4">city or maps link</p>
               <h3 className="text-xl font-semibold mb-3">
                 Contact Information
               </h3>
-              <p className="text-gray-700 mb-2">Email: info@tablebooking.com</p>
-              <p className="text-gray-700 mb-2">Phone: +1 (123) 456-7890</p>
+              <p className="text-gray-700 mb-2">Email: </p>
+              <p className="text-gray-700 mb-2">Phone: </p>
             </div>
             <div className="md:w-1/2">
               <h3 className="text-xl font-semibold mb-3">Business Hours</h3>
-              <p className="text-gray-700 mb-2">Check-in: 2:00 PM</p>
-              <p className="text-gray-700 mb-2">Check-out: 11:00 AM</p>
-              <p className="text-gray-700 mb-2">Front Desk: 24/7</p>
+              <p className="text-gray-700 mb-2">Check-in: </p>
+              <p className="text-gray-700 mb-2">Check-out: </p>
+              <p className="text-gray-700 mb-2">Front Desk: </p>
               <p className="text-gray-700 mb-2">
-                Restaurant: 6:30 AM - 10:30 PM
+                Restaurant: 
               </p>
             </div>
           </div>
