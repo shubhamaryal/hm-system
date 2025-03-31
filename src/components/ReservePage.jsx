@@ -62,6 +62,18 @@ const ReservePage = () => {
                     : "bg-gray-400 cursor-not-allowed"
                 } text-white px-4 py-2 sm:py-3 rounded-md transition-colors text-base sm:text-lg w-full sm:w-auto`}
                 disabled={!room.available}
+                onClick={() => {
+                  if (room.available) {
+                    navigate(
+                      `/rooms/${room.roomType}/${room.title
+                        .replace(/\s+/g, "-")
+                        .toLowerCase()}/booking`,
+                      {
+                        state: { room },
+                      }
+                    );
+                  }
+                }}
               >
                 {room.available ? "Book Now" : "Not Available"}
               </button>

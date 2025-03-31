@@ -89,6 +89,7 @@ const hotelRooms = [
 ];
 
 function DeluxeRoomDetails() {
+  const roomType = "deluxe";
   const navigate = useNavigate();
 
   const handleArrowClick = () => {
@@ -99,7 +100,7 @@ function DeluxeRoomDetails() {
     const { ratingText, ratingColor, ratingBg } = getRatingDetails(room.rating);
 
     navigate(
-      `/rooms/reserve/${room.title.replace(/\s+/g, "-").toLowerCase()}`,
+      `/rooms/${roomType}/${room.title.replace(/\s+/g, "-").toLowerCase()}`,
       {
         state: {
           room: {
@@ -107,6 +108,7 @@ function DeluxeRoomDetails() {
             ratingText,
             ratingColor,
             ratingBg,
+            roomType: "deluxe",
           },
         },
       }

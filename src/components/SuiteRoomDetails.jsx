@@ -89,6 +89,7 @@ const hotelRooms = [
 ];
 
 function SuiteRoomDetails() {
+  const roomType = "suite";
   const navigate = useNavigate();
 
   const handleArrowClick = () => {
@@ -99,7 +100,7 @@ function SuiteRoomDetails() {
     const { ratingText, ratingColor, ratingBg } = getRatingDetails(room.rating);
 
     navigate(
-      `/rooms/reserve/${room.title.replace(/\s+/g, "-").toLowerCase()}`,
+      `/rooms/${roomType}/${room.title.replace(/\s+/g, "-").toLowerCase()}`,
       {
         state: {
           room: {
@@ -107,6 +108,7 @@ function SuiteRoomDetails() {
             ratingText,
             ratingColor,
             ratingBg,
+            roomType: "suite",
           },
         },
       }

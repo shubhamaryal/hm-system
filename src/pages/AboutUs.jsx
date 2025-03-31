@@ -52,9 +52,7 @@ const AboutUs = () => {
           <div className="flex flex-col md:flex-row gap-8">
             <div className="md:w-1/2">
               <h3 className="text-xl font-semibold mb-3">Location</h3>
-              <p className="text-gray-700 mb-4">
-                location name
-              </p>
+              <p className="text-gray-700 mb-4">location name</p>
               <p className="text-gray-700 mb-4">city or maps link</p>
               <h3 className="text-xl font-semibold mb-3">
                 Contact Information
@@ -67,9 +65,7 @@ const AboutUs = () => {
               <p className="text-gray-700 mb-2">Check-in: </p>
               <p className="text-gray-700 mb-2">Check-out: </p>
               <p className="text-gray-700 mb-2">Front Desk: </p>
-              <p className="text-gray-700 mb-2">
-                Restaurant: 
-              </p>
+              <p className="text-gray-700 mb-2">Restaurant:</p>
             </div>
           </div>
         </div>

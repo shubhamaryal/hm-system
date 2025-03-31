@@ -1,18 +1,30 @@
+"use client";
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = (data) => {
     console.log(data);
+    // In a real app, you would send this data to your backend
+    // For demo purposes, we'll just set the user as logged in
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userEmail", data.email);
+    localStorage.setItem("userName", data.fullName);
+    localStorage.setItem("userPhone", data.phone);
+    navigate("/");
   };
 
   return (
@@ -114,6 +126,8 @@ const SignUp = () => {
               <input
                 {...register("confirmPassword", {
                   required: "Confirm Password is required",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
                 })}
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
@@ -131,7 +145,7 @@ const SignUp = () => {
                 )}
               </button>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">
+                <p className="text-red-500 text-sm mt-1">
                   {errors.confirmPassword.message}
                 </p>
               )}

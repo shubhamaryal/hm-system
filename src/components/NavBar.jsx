@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Menu, User } from "lucide-react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const navigate = useNavigate();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -12,8 +15,30 @@ const Navbar = () => {
     { name: "About Us", path: "/about-us" },
   ];
 
+  // Check if user is logged in (this would typically use a more robust auth system)
+  useEffect(() => {
+    const userLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(userLoggedIn);
+  }, []);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleProfileMenu = () => {
+    setShowProfileMenu(!showProfileMenu);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+    setShowProfileMenu(false);
+    navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    setShowProfileMenu(false);
+    navigate("/profile");
   };
 
   return (
@@ -47,18 +72,47 @@ const Navbar = () => {
             </NavLink>
           ))}
           <div className="flex items-center gap-3.25 text-[16px] font-bold">
-            <NavLink
-              to="/signup"
-              className="px-5 py-2.5 cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300"
-            >
-              Sign Up
-            </NavLink>
-            <NavLink
-              to="/login"
-              className="px-5 py-2.5 cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300"
-            >
-              Book Now
-            </NavLink>
+            {isLoggedIn ? (
+              <div className="relative">
+                <button
+                  onClick={toggleProfileMenu}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+                >
+                  <User size={20} />
+                </button>
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <button
+                      onClick={handleProfileClick}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      My Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <NavLink
+                  to="/signup"
+                  className="px-5 py-2.5 cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300"
+                >
+                  Sign Up
+                </NavLink>
+                <NavLink
+                  to="/login"
+                  className="px-5 py-2.5 cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300"
+                >
+                  Book Now
+                </NavLink>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -82,20 +136,43 @@ const Navbar = () => {
             </NavLink>
           ))}
           <div className="flex flex-col gap-2 mt-2">
-            <NavLink
-              to="/signup"
-              className="px-5 py-2.5 text-center cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sign Up
-            </NavLink>
-            <NavLink
-              to="/login"
-              className="px-5 py-2.5 text-center cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Book Now
-            </NavLink>
+            {isLoggedIn ? (
+              <>
+                <NavLink
+                  to="/profile"
+                  className="px-5 py-2.5 text-center cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  My Profile
+                </NavLink>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="px-5 py-2.5 text-center cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/signup"
+                  className="px-5 py-2.5 text-center cursor-pointer text-amber-500 border border-amber-300 rounded-md hover:bg-amber-500 hover:text-white transition duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign Up
+                </NavLink>
+                <NavLink
+                  to="/login"
+                  className="px-5 py-2.5 text-center cursor-pointer bg-amber-500 text-white rounded-md hover:bg-amber-600 transition duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Book Now
+                </NavLink>
+              </>
+            )}
           </div>
         </div>
       )}

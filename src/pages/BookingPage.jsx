@@ -1,15 +1,59 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Navbar from "../components/NavBar";
-import { useNavigate } from "react-router-dom";
-import { MoveLeft, Calendar, ChevronDown, Info } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { MoveLeft, ChevronDown, Info, Wifi, Bed, Bath } from "lucide-react";
+import CashOnArrivalPolicy from "../components/CashOnArrivalPolicy";
 
 const BookingPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(1);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cc");
+  const [roomData, setRoomData] = useState(null);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+
+  const location = useLocation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm();
+
+  useEffect(() => {
+    if (location.state?.room) {
+      setRoomData(location.state.room);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    setValue("policyAgreement", agreedToPolicy);
+  }, [agreedToPolicy, setValue]);
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const calculateTaxes = () => {
+    if (!roomData?.price) return 0;
+    return Math.round(Number(roomData.price) * 0.1);
+  };
+
+  const calculateTotal = () => {
+    if (!roomData?.price) return 0;
+    return Number(roomData.price) + calculateTaxes();
+  };
+
+  const onSubmitBookingInfo = (data) => {
+    console.log("Booking info submitted:", data);
+    setActiveTab(2);
+  };
+
+  const onSubmitPayment = (data) => {
+    console.log("Payment submitted:", data);
+    alert("Booking completed successfully!");
   };
 
   return (
@@ -25,10 +69,10 @@ const BookingPage = () => {
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-center mx-auto w-full max-w-[1350px] h-auto md:h-[80vh] mt-2 gap-10 mb-20 px-4">
+        <div className="flex flex-col md:flex-row items-start justify-center mx-auto w-full max-w-[1350px] h-auto mt-2 gap-10 mb-20 px-4">
           {/* Booking Information Section */}
-          <div className="bg-white w-full md:w-1/2 h-full text-lg rounded-lg shadow-md">
-            <div className="p-5 ml-4 flex gap-10">
+          <div className="bg-white w-full md:w-1/2 text-lg rounded-lg shadow-md mb-10 md:mb-0 overflow-hidden">
+            <div className="p-5 ml-4 flex flex-wrap gap-4 sm:gap-10">
               <button
                 className={`font-medium flex items-center ${
                   activeTab === 1 ? "text-amber-500" : "text-gray-500"
@@ -50,7 +94,7 @@ const BookingPage = () => {
                 className={`font-medium flex items-center ${
                   activeTab === 2 ? "text-amber-500" : "text-gray-500"
                 }`}
-                onClick={() => setActiveTab(2)}
+                onClick={() => (activeTab === 2 ? null : setActiveTab(2))}
               >
                 <span
                   className={`flex items-center justify-center text-gray-500 h-8 w-8 mr-2 ${
@@ -65,26 +109,36 @@ const BookingPage = () => {
               </button>
             </div>
 
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               {activeTab === 1 && (
-                <>
-                  <h1 className="text-3xl font-bold mb-8">Booking Details</h1>
+                <form onSubmit={handleSubmit(onSubmitBookingInfo)}>
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
+                    Booking Details
+                  </h1>
 
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 sm:gap-y-8">
                     <div className="col-span-1">
                       <label className="block text-gray-700 mb-2">
                         Check-in
                       </label>
                       <div className="relative">
                         <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3 pr-10"
+                          type="date"
+                          className={`w-full border ${
+                            errors.checkIn
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          } rounded-md p-3`}
                           placeholder="Select date"
+                          {...register("checkIn", {
+                            required: "Check-in date is required",
+                          })}
                         />
-                        <Calendar
-                          className="absolute right-3 top-3 text-gray-400"
-                          size={20}
-                        />
+                        {errors.checkIn && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.checkIn.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -94,14 +148,22 @@ const BookingPage = () => {
                       </label>
                       <div className="relative">
                         <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3 pr-10"
+                          type="date"
+                          className={`w-full border ${
+                            errors.checkOut
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          } rounded-md p-3`}
                           placeholder="Select date"
+                          {...register("checkOut", {
+                            required: "Check-out date is required",
+                          })}
                         />
-                        <Calendar
-                          className="absolute right-3 top-3 text-gray-400"
-                          size={20}
-                        />
+                        {errors.checkOut && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.checkOut.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -110,20 +172,34 @@ const BookingPage = () => {
                         No. of Guests
                       </label>
                       <div className="relative">
-                        <select className="w-full border border-gray-300 rounded-md p-3 pr-10 appearance-none">
-                          <option>Select</option>
-                          <option>1</option>
-                          <option>2</option>
+                        <select
+                          className={`w-full border ${
+                            errors.guests ? "border-red-500" : "border-gray-300"
+                          } rounded-md p-3 pr-10 appearance-none`}
+                          {...register("guests", {
+                            required: "Number of guests is required",
+                          })}
+                        >
+                          <option value="">Select</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
                         </select>
                         <ChevronDown
                           className="absolute right-3 top-3 text-gray-400"
                           size={20}
                         />
+                        {errors.guests && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.guests.message}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="col-span-2 mt-4">
-                      <h2 className="text-2xl font-bold mb-4">
+                    <div className="col-span-1 sm:col-span-2 mt-2 sm:mt-4">
+                      <h2 className="text-xl sm:text-2xl font-bold mb-4">
                         Contact Details
                       </h2>
                     </div>
@@ -134,8 +210,20 @@ const BookingPage = () => {
                       </label>
                       <input
                         type="text"
-                        className="w-full border border-gray-300 rounded-md p-3"
+                        className={`w-full border ${
+                          errors.firstName
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } rounded-md p-3`}
+                        {...register("firstName", {
+                          required: "First name is required",
+                        })}
                       />
+                      {errors.firstName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.firstName.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="col-span-1">
@@ -144,8 +232,18 @@ const BookingPage = () => {
                       </label>
                       <input
                         type="text"
-                        className="w-full border border-gray-300 rounded-md p-3"
+                        className={`w-full border ${
+                          errors.lastName ? "border-red-500" : "border-gray-300"
+                        } rounded-md p-3`}
+                        {...register("lastName", {
+                          required: "Last name is required",
+                        })}
                       />
+                      {errors.lastName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.lastName.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="col-span-1">
@@ -154,39 +252,71 @@ const BookingPage = () => {
                       </label>
                       <input
                         type="tel"
-                        className="w-full border border-gray-300 rounded-md p-3"
+                        className={`w-full border ${
+                          errors.phone ? "border-red-500" : "border-gray-300"
+                        } rounded-md p-3`}
+                        {...register("phone", {
+                          required: "Phone number is required",
+                          pattern: {
+                            value: /^[0-9]{10}$/,
+                            message:
+                              "Please enter a valid 10-digit phone number",
+                          },
+                        })}
                       />
+                      {errors.phone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.phone.message}
+                        </p>
+                      )}
                     </div>
 
                     <div className="col-span-1">
                       <label className="block text-gray-700 mb-2">Email</label>
                       <input
                         type="email"
-                        className="w-full border border-gray-300 rounded-md p-3"
+                        className={`w-full border ${
+                          errors.email ? "border-red-500" : "border-gray-300"
+                        } rounded-md p-3`}
+                        {...register("email", {
+                          required: "Email is required",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Please enter a valid email address",
+                          },
+                        })}
                       />
+                      {errors.email && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.email.message}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="col-span-2 mt-4">
+                    <div className="col-span-1 sm:col-span-2 mt-2 sm:mt-4">
                       <button
+                        type="submit"
                         className="w-full bg-amber-500 text-white py-4 rounded-md font-medium text-lg hover:bg-amber-600 transition-colors"
-                        onClick={() => setActiveTab(2)}
                       >
                         Proceed to Payment
                       </button>
                     </div>
                   </div>
-                </>
+                </form>
               )}
 
               {activeTab === 2 && (
-                <>
-                  <h1 className="text-3xl font-bold mb-8">Payment Method</h1>
+                <form onSubmit={handleSubmit(onSubmitPayment)}>
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">
+                    Payment Method
+                  </h1>
 
                   {/* Payment Method Buttons */}
-                  <div className="flex flex-wrap gap-4 mb-6">
+                  <div className="flex flex-wrap gap-2 mb-6">
                     <button
+                      type="button"
                       onClick={() => setSelectedPaymentMethod("cc")}
-                      className={`relative px-4 py-2 rounded-md border-2 transition-colors flex items-center gap-2 ${
+                      className={`relative px-2 py-1.5 rounded-md border-2 transition-colors flex items-center gap-1 ${
                         selectedPaymentMethod === "cc"
                           ? "border-amber-500 bg-amber-50"
                           : "border-gray-300 hover:border-amber-300"
@@ -195,17 +325,20 @@ const BookingPage = () => {
                       <img
                         src="/payment/credit-card.png"
                         alt="Credit Card"
-                        className="w-6 h-6 object-contain"
+                        className="w-4 h-4 object-contain"
                       />
-                      Credit/Debit Card
+                      <span className="text-xs sm:text-sm">
+                        Credit/Debit Card
+                      </span>
                       {selectedPaymentMethod === "cc" && (
                         <div className="absolute -top-2 -right-2 w-4 h-4 bg-amber-500 rounded-full border-2 border-white"></div>
                       )}
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => setSelectedPaymentMethod("paypal")}
-                      className={`relative px-4 py-2 rounded-md border-2 transition-colors flex items-center gap-2 ${
+                      className={`relative px-2 py-1.5 rounded-md border-2 transition-colors flex items-center gap-1 ${
                         selectedPaymentMethod === "paypal"
                           ? "border-amber-500 bg-amber-50"
                           : "border-gray-300 hover:border-amber-300"
@@ -214,17 +347,18 @@ const BookingPage = () => {
                       <img
                         src="/payment/paypal.png"
                         alt="PayPal"
-                        className="w-6 h-6 object-contain"
+                        className="w-4 h-4 object-contain"
                       />
-                      Paypal
+                      <span className="text-xs sm:text-sm">Paypal</span>
                       {selectedPaymentMethod === "paypal" && (
                         <div className="absolute -top-2 -right-2 w-4 h-4 bg-amber-500 rounded-full border-2 border-white"></div>
                       )}
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => setSelectedPaymentMethod("cash")}
-                      className={`relative px-4 py-2 rounded-md border-2 transition-colors flex items-center gap-2 ${
+                      className={`relative px-2 py-1.5 rounded-md border-2 transition-colors flex items-center gap-1 ${
                         selectedPaymentMethod === "cash"
                           ? "border-amber-500 bg-amber-50"
                           : "border-gray-300 hover:border-amber-300"
@@ -233,134 +367,277 @@ const BookingPage = () => {
                       <img
                         src="/payment/cash.png"
                         alt="Cash"
-                        className="w-6 h-6 object-contain"
+                        className="w-4 h-4 object-contain"
                       />
-                      Cash On Arrival
+                      <span className="text-xs sm:text-sm">
+                        Cash On Arrival
+                      </span>
                       {selectedPaymentMethod === "cash" && (
                         <div className="absolute -top-2 -right-2 w-4 h-4 bg-amber-500 rounded-full border-2 border-white"></div>
                       )}
                     </button>
                   </div>
 
-                  {/* Cash On Arrival Section */}
-                  {selectedPaymentMethod === "cash" && (
-                    <div className="p-8 text-center">
-                      <p className="text-gray-600">
-                        Pay with cash when you arrive at the property.
-                        <br />A staff member will collect your payment during
-                        check-in.
-                      </p>
-                    </div>
-                  )}
+                  {/* Payment Method Content */}
+                  <div className="min-h-[250px]">
+                    {/* Cash On Arrival Section */}
+                    {selectedPaymentMethod === "cash" && (
+                      <CashOnArrivalPolicy
+                        register={register}
+                        errors={errors}
+                        agreedToPolicy={agreedToPolicy}
+                        setAgreedToPolicy={setAgreedToPolicy}
+                      />
+                    )}
 
-                  {selectedPaymentMethod === "cc" && (
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-                      <div className="col-span-2">
-                        <label className="block text-gray-700 mb-2">
-                          Card Number
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3"
-                          placeholder="1234 5678 9012 3456"
-                        />
+                    {selectedPaymentMethod === "cc" && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 sm:gap-y-8 mb-6">
+                        <div className="col-span-1 sm:col-span-2">
+                          <label className="block text-gray-700 mb-2">
+                            Card Number
+                          </label>
+                          <input
+                            type="text"
+                            className={`w-full border ${
+                              errors.cardNumber
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md p-3`}
+                            placeholder="1234 5678 9012 3456"
+                            {...register("cardNumber", {
+                              validate: (value) =>
+                                selectedPaymentMethod !== "cc" ||
+                                (value && value.length >= 13) ||
+                                "Please enter a valid card number",
+                            })}
+                          />
+                          {errors.cardNumber && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.cardNumber.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="col-span-1">
+                          <label className="block text-gray-700 mb-2">
+                            Expiry Date
+                          </label>
+                          <input
+                            type="text"
+                            className={`w-full border ${
+                              errors.expiryDate
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md p-3`}
+                            placeholder="MM/YY"
+                            {...register("expiryDate", {
+                              validate: (value) =>
+                                selectedPaymentMethod !== "cc" ||
+                                (value &&
+                                  /^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) ||
+                                "Please enter a valid expiry date (MM/YY)",
+                            })}
+                          />
+                          {errors.expiryDate && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.expiryDate.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="col-span-1">
+                          <label className="block text-gray-700 mb-2">
+                            CVV
+                          </label>
+                          <input
+                            type="text"
+                            className={`w-full border ${
+                              errors.cvv ? "border-red-500" : "border-gray-300"
+                            } rounded-md p-3`}
+                            placeholder="123"
+                            {...register("cvv", {
+                              validate: (value) =>
+                                selectedPaymentMethod !== "cc" ||
+                                (value && /^\d{3,4}$/.test(value)) ||
+                                "Please enter a valid CVV",
+                            })}
+                          />
+                          {errors.cvv && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.cvv.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="col-span-1 sm:col-span-2">
+                          <label className="block text-gray-700 mb-2">
+                            Cardholder Name
+                          </label>
+                          <input
+                            type="text"
+                            className={`w-full border ${
+                              errors.cardholderName
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } rounded-md p-3`}
+                            placeholder="John Doe"
+                            {...register("cardholderName", {
+                              validate: (value) =>
+                                selectedPaymentMethod !== "cc" ||
+                                (value && value.length > 3) ||
+                                "Please enter the cardholder name",
+                            })}
+                          />
+                          {errors.cardholderName && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.cardholderName.message}
+                            </p>
+                          )}
+                        </div>
                       </div>
+                    )}
 
-                      <div className="col-span-1">
-                        <label className="block text-gray-700 mb-2">
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3"
-                          placeholder="MM/YY"
-                        />
+                    {selectedPaymentMethod === "paypal" && (
+                      <div className="text-center p-8 mb-6 border border-gray-200 rounded-md">
+                        <p className="mb-4 text-gray-600">
+                          You will be redirected to PayPal to complete your
+                          payment
+                        </p>
+                        <button
+                          type="button"
+                          className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md transition-colors"
+                        >
+                          Continue with PayPal
+                        </button>
                       </div>
+                    )}
+                  </div>
 
-                      <div className="col-span-1">
-                        <label className="block text-gray-700 mb-2">CVV</label>
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3"
-                          placeholder="123"
-                        />
-                      </div>
-
-                      <div className="col-span-2">
-                        <label className="block text-gray-700 mb-2">
-                          Cardholder Name
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md p-3"
-                          placeholder="John Doe"
-                        />
-                      </div>
+                  {/* Payment Amount Section */}
+                  <div className="border-t border-gray-200 pt-6 mb-6">
+                    <h2 className="text-xl font-semibold mb-4">
+                      Payment Amount
+                    </h2>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-gray-600">Subtotal:</span>
+                      <span className="font-medium">
+                        Rs. {roomData?.price || "0"}
+                      </span>
                     </div>
-                  )}
-
-                  {selectedPaymentMethod === "paypal" && (
-                    <div className="text-center p-8">
-                      <p className="mb-4 text-gray-600">
-                        You will be redirected to PayPal to complete your
-                        payment
-                      </p>
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md transition-colors">
-                        Continue with PayPal
-                      </button>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-gray-600">Taxes & Fees:</span>
+                      <span className="font-medium">
+                        Rs. {calculateTaxes()}
+                      </span>
                     </div>
-                  )}
-
-                  {selectedPaymentMethod === "cash" && (
-                    <div className="p-8 text-center">
-                      <p className="text-gray-600">
-                        Pay with cash when you arrive at the property.
-                        <br />A staff member will collect your payment during
-                        check-in.
-                      </p>
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                      <span className="text-amber-500 font-semibold">
+                        Total Payable:
+                      </span>
+                      <span className="text-amber-500 font-semibold">
+                        Rs. {calculateTotal()}
+                      </span>
                     </div>
-                  )}
+                  </div>
 
-                  <div className="mt-8">
-                    <button className="w-full bg-amber-500 text-white py-4 rounded-md font-medium text-lg hover:bg-amber-600 transition-colors">
+                  <div className="mt-6 sm:mt-8">
+                    <button
+                      type="submit"
+                      className="w-full bg-amber-500 text-white py-4 rounded-md font-medium text-lg hover:bg-amber-600 transition-colors"
+                    >
                       Complete Booking
                     </button>
                   </div>
 
                   <div className="mt-2">
                     <button
+                      type="button"
                       className="w-full bg-gray-200 text-gray-700 py-4 rounded-md font-medium text-lg hover:bg-gray-300 transition-colors"
                       onClick={() => setActiveTab(1)}
                     >
                       Back to Booking Details
                     </button>
                   </div>
-                </>
+                </form>
               )}
             </div>
           </div>
 
           {/* Room Details Section */}
-          <div className="bg-white w-full md:w-1/2 h-full rounded-t-4xl shadow-md overflow-hidden">
-            <div className="h-1/2 overflow-hidden">
+          <div className="bg-white w-full md:w-1/2 rounded-t-4xl shadow-md overflow-hidden">
+            <div className="h-64 sm:h-80 md:h-1/2 overflow-hidden">
               <img
-                src="/images/login.jpeg"
-                alt="Serenity Deluxe Room"
+                src={roomData?.imageUrl || "/images/login.jpeg"}
+                alt={`${roomData?.title || "Room"} view`}
                 className="h-full w-full object-cover"
               />
             </div>
-            <div className="h-1/2 w-full p-6">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-2">
-                <h1 className="text-3xl font-bold">Serenity Deluxe</h1>
-                <h2 className="text-amber-500 text-3xl font-bold">Rs.9999</h2>
+                <h1 className="text-2xl sm:text-3xl font-bold">
+                  {roomData?.title || "Room"}
+                </h1>
+                <h2 className="text-amber-500 text-2xl sm:text-3xl font-bold">
+                  Rs.{roomData?.price || "9999"}
+                </h2>
               </div>
 
-              <p className=" text-lg flex text-amber-500 items-center gap-2">
-                Note
-                <Info size={16} className="text-amber-500 mr-2" />
-              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-lg text-amber-500">
+                  {roomData?.roomType
+                    ? roomData.roomType.charAt(0).toUpperCase() +
+                      roomData.roomType.slice(1)
+                    : "Standard"}{" "}
+                  Room
+                </p>
+                <Info size={16} className="text-amber-500" />
+              </div>
 
-              <span className="text-sm">Max Occupancy: 2</span>
+              <div className="mb-3">
+                <span className="text-sm font-medium">
+                  Max Occupancy: {roomData?.occupancy || "2"}
+                </span>
+              </div>
+
+              {roomData?.rating && (
+                <div className="flex items-center gap-2 mb-3">
+                  <div
+                    className={`${roomData.ratingBg || "bg-green-100"} ${
+                      roomData.ratingColor || "text-green-500"
+                    } px-2 py-1 rounded-lg text-sm font-medium`}
+                  >
+                    {roomData.rating} ★ {roomData.ratingText || "Excellent"}
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {roomData.reviews || "0"} reviews
+                  </span>
+                </div>
+              )}
+
+              {roomData?.amenities && (
+                <div className="mt-4">
+                  <h3 className="font-medium mb-2">Room Amenities:</h3>
+                  <ul className="space-y-2">
+                    {roomData.amenities.map((amenity, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center text-gray-600 text-sm"
+                      >
+                        {amenity.icon === "wifi" && (
+                          <Wifi size={16} className="mr-2 text-amber-500" />
+                        )}
+                        {amenity.icon === "bed" && (
+                          <Bed size={16} className="mr-2 text-amber-500" />
+                        )}
+                        {amenity.icon === "bath" && (
+                          <Bath size={16} className="mr-2 text-amber-500" />
+                        )}
+                        {amenity.text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>

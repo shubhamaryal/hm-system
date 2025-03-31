@@ -25,7 +25,10 @@ const Hero = () => {
           amet justo ac odio convallis tristique. Honcus nunc, ut vestibulum
           justo purus nec integer.
         </p>
-        <Link to="/rooms" className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition duration-300">
+        <Link
+          to="/rooms"
+          className="bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition duration-300"
+        >
           Reserve Now
         </Link>
       </div>

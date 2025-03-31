@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const {
@@ -9,9 +10,15 @@ const Login = () => {
     formState: { errors },
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = (data) => {
     console.log(data);
+    // In a real app, you would validate credentials with a backend
+    // For demo purposes, we'll just set the user as logged in
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userEmail", data.email);
+    navigate("/");
   };
 
   return (
