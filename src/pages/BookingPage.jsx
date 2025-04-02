@@ -12,6 +12,7 @@ const BookingPage = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cc");
   const [roomData, setRoomData] = useState(null);
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [minCheckoutDate, setMinCheckoutDate] = useState("");
 
   const location = useLocation();
 
@@ -20,7 +21,12 @@ const BookingPage = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
+    trigger,
   } = useForm();
+
+  // Watch check-in date to update checkout min date
+  const checkInDate = watch("checkIn");
 
   useEffect(() => {
     if (location.state?.room) {
@@ -31,6 +37,21 @@ const BookingPage = () => {
   useEffect(() => {
     setValue("policyAgreement", agreedToPolicy);
   }, [agreedToPolicy, setValue]);
+
+  // Update minimum checkout date when check-in date changes
+  useEffect(() => {
+    if (checkInDate) {
+      setMinCheckoutDate(checkInDate);
+      
+      // Validate checkout date if it exists to ensure it's after the new check-in date
+      const checkOutDate = watch("checkOut");
+      if (checkOutDate && checkOutDate <= checkInDate) {
+        // Reset checkout date if it's now invalid
+        setValue("checkOut", "");
+        trigger("checkOut");
+      }
+    }
+  }, [checkInDate, setValue, watch, trigger]);
 
   const handleBack = () => {
     navigate(-1);
@@ -54,6 +75,15 @@ const BookingPage = () => {
   const onSubmitPayment = (data) => {
     console.log("Payment submitted:", data);
     alert("Booking completed successfully!");
+  };
+
+  // Get today's date in YYYY-MM-DD format for min date attribute
+  const getCurrentDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -130,6 +160,7 @@ const BookingPage = () => {
                               : "border-gray-300"
                           } rounded-md p-3`}
                           placeholder="Select date"
+                          min={getCurrentDate()}
                           {...register("checkIn", {
                             required: "Check-in date is required",
                           })}
@@ -155,8 +186,12 @@ const BookingPage = () => {
                               : "border-gray-300"
                           } rounded-md p-3`}
                           placeholder="Select date"
+                          min={minCheckoutDate || getCurrentDate()}
                           {...register("checkOut", {
                             required: "Check-out date is required",
+                            validate: value => 
+                              !checkInDate || value > checkInDate || 
+                              "Check-out date must be after check-in date"
                           })}
                         />
                         {errors.checkOut && (
