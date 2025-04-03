@@ -48,7 +48,7 @@ const CashOnArrivalPolicy = ({ register, errors, agreedToPolicy, setAgreedToPoli
 
       {/* Cash On Arrival Policies Popup - Change background to transparent with subtle blur */}
       {showPoliciesPopup && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-white/5 bg-blue-500/5 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/5 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-lg">
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-2xl font-bold">Cash On Arrival Policies</h2>
