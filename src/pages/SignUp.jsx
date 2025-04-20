@@ -1,9 +1,9 @@
-"use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const BACKEND_URI = "http://localhost:8000/";
 
 const SignUp = () => {
   const {
@@ -14,17 +14,55 @@ const SignUp = () => {
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // In a real app, you would send this data to your backend
-    // For demo purposes, we'll just set the user as logged in
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userEmail", data.email);
-    localStorage.setItem("userName", data.fullName);
-    localStorage.setItem("userPhone", data.phone);
-    navigate("/");
+  const onSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      setError("");
+
+      const payload = {
+        fullName: data.fullName,
+        email: data.email,
+        phoneNumber: data.phone,
+        password: data.password,
+      };
+
+      console.log("Sending payload:", payload);
+
+      const response = await fetch(`${BACKEND_URI}user/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("Response status:", response.status);
+
+      const result = await response.json();
+      console.log("Response data:", result);
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || result.error || "Registration failed"
+        );
+      }
+
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("userName", data.fullName);
+      localStorage.setItem("userPhone", data.phone);
+
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "An error occurred during registration");
+      console.error("Signup error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,6 +89,13 @@ const SignUp = () => {
             Register & Explore
           </h2>
           <h3 className="text-2xl font-bold text-center mb-8">Sign Up</h3>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-center">
+              {error}
+            </div>
+          )}
+
           <form
             className="space-y-6 flex flex-col items-center"
             onSubmit={handleSubmit(onSubmit)}
@@ -153,9 +198,10 @@ const SignUp = () => {
 
             <button
               type="submit"
-              className="w-[80%] py-3 text-lg bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors"
+              disabled={isSubmitting}
+              className="w-[80%] py-3 text-lg bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors disabled:bg-amber-300"
             >
-              Create Account
+              {isSubmitting ? "Processing..." : "Create Account"}
             </button>
           </form>
           <p className="mt-8 text-center text-lg">

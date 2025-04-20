@@ -1,7 +1,9 @@
+import React, { useState, useEffect } from "react";
 import RoomCard from "./RoomCard";
 import Navbar from "./NavBar";
 import { useNavigate } from "react-router-dom";
 import { MoveLeft } from "lucide-react";
+import { fetchAvailableRooms } from "../api/roomsApi";
 
 function getRatingDetails(rating) {
   let ratingColor;
@@ -25,72 +27,70 @@ function getRatingDetails(rating) {
   return { ratingColor, ratingText, ratingBg };
 }
 
-const hotelRooms = [
-  {
-    imageUrl:
-      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800",
-    title: "Solo Retreat",
-    occupancy: "1 Adult",
-    rating: 3,
-    amenities: [
-      { icon: "wifi", text: "Free Wifi" },
-      { icon: "bed", text: "1x Single Bed" },
-      { icon: "bath", text: "1x Modest Bathroom" },
-    ],
-    price: "999",
-    reviews: "128",
-    available: true,
-  },
-  {
-    imageUrl:
-      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=800",
-    title: "Classic Queen",
-    occupancy: "2 Adults",
-    rating: 4.8,
-    amenities: [
-      { icon: "wifi", text: "Free Wifi" },
-      { icon: "bed", text: "1x Queen Bed" },
-      { icon: "bath", text: "1x Modest Bathroom" },
-    ],
-    price: "999",
-    reviews: "128",
-    available: false,
-  },
-  {
+const mapApiRoomToCardProps = (apiRoom) => {
+  const rating = 4.9;
+
+  const amenities = [
+    {
+      icon: "wifi",
+      text: apiRoom.amenities.wifi ? "Free Premium Wifi" : "No Wifi",
+    },
+    {
+      icon: "bed",
+      text: `${apiRoom.amenities.beds.king || 0}x King, ${
+        apiRoom.amenities.beds.queen || 0
+      }x Queen, ${apiRoom.amenities.beds.single || 0}x Single`,
+    },
+    {
+      icon: "bath",
+      text: `${apiRoom.amenities.bathrooms || 1}x Luxury Bathroom`,
+    },
+  ];
+
+  return {
     imageUrl:
       "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=800",
-    title: "Family Suite",
-    occupancy: "4 Adults",
-    rating: 3.5,
-    amenities: [
-      { icon: "wifi", text: "Premium Wifi" },
-      { icon: "bed", text: "2x King Beds" },
-      { icon: "bath", text: "2x Ensuite Bathrooms" },
-    ],
-    price: "2499",
-    reviews: "189",
+    title: apiRoom.roomName || "Luxury Suite",
+    occupancy: `${apiRoom.occupancy.adult || 0} Adults, ${
+      apiRoom.occupancy.children || 0
+    } Children`,
+    rating: rating,
+    amenities: amenities,
+    price: apiRoom.price?.toString() || "0",
+    reviews: "218",
     available: true,
-  },
-  {
-    imageUrl:
-      "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=800",
-    title: "Family Suite",
-    occupancy: "4 Adults",
-    rating: 4.7,
-    amenities: [
-      { icon: "wifi", text: "Premium Wifi" },
-      { icon: "bed", text: "2x King Beds" },
-      { icon: "bath", text: "2x Ensuite Bathrooms" },
-    ],
-    price: "2499",
-    reviews: "189",
-    available: false,
-  },
-];
+    apiRoomId: apiRoom._id,
+    roomNumber: apiRoom.roomNumber,
+    description: apiRoom.description || "",
+  };
+};
 
 function SuiteRoomDetails() {
   const roomType = "suite";
   const navigate = useNavigate();
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadRooms = async () => {
+      try {
+        setLoading(true);
+        const roomData = await fetchAvailableRooms();
+        const suiteRooms = roomData.filter(
+          (room) => room.roomType === "Suite" || room.roomType === "suite"
+        );
+        setRooms(suiteRooms);
+      } catch (err) {
+        setError("Failed to load rooms. Please try again later.");
+        console.error("Error in loadRooms:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRooms();
+  }, []);
 
   const handleArrowClick = () => {
     navigate("/rooms");
@@ -115,6 +115,8 @@ function SuiteRoomDetails() {
     );
   };
 
+  console.log("Current suite rooms state:", rooms);
+
   return (
     <>
       <Navbar />
@@ -124,26 +126,41 @@ function SuiteRoomDetails() {
           className="scale-150 sm:scale-200 cursor-pointer hover:text-amber-400"
         />
         <div className="text-3xl sm:text-4xl md:text-5xl text-gray-600">
-          <span className="text-amber-500">Suite</span> Rooms
+          <span className="text-amber-500">Luxury</span> Suites
         </div>
       </div>
       <div className="min-h-screen flex flex-col items-center justify-start p-4 gap-6 mt-16">
-        {hotelRooms.map((room, index) => {
-          const { ratingColor, ratingText, ratingBg } = getRatingDetails(
-            room.rating
-          );
+        {loading && <div className="text-xl">Loading suites...</div>}
+        {error && <div className="text-xl text-red-500">{error}</div>}
 
-          return (
-            <RoomCard
-              key={index}
-              {...room}
-              ratingColor={ratingColor}
-              ratingText={ratingText}
-              ratingBg={ratingBg}
-              handleReserveClick={() => handleReserveClick(room)}
-            />
-          );
-        })}
+        {!loading && !error && rooms.length === 0 && (
+          <div className="text-xl">No Suites available at the moment.</div>
+        )}
+
+        {!loading &&
+          !error &&
+          rooms.map((apiRoom, index) => {
+            const room = mapApiRoomToCardProps(apiRoom);
+            const { ratingColor, ratingText, ratingBg } = getRatingDetails(
+              room.rating
+            );
+
+            return (
+              <RoomCard
+                key={apiRoom._id || index}
+                {...room}
+                ratingColor={ratingColor}
+                ratingText={ratingText}
+                ratingBg={ratingBg}
+                handleReserveClick={() =>
+                  handleReserveClick({
+                    ...room,
+                    apiData: apiRoom,
+                  })
+                }
+              />
+            );
+          })}
       </div>
     </>
   );

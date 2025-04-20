@@ -3,22 +3,60 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const BACKEND_URI = "http://localhost:8000/";
+
 const Login = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // In a real app, you would validate credentials with a backend
-    // For demo purposes, we'll just set the user as logged in
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userEmail", data.email);
-    navigate("/");
+  const onSubmit = async (data) => {
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(`${BACKEND_URI}user/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+        credentials: "include",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Login failed");
+      }
+
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", data.email);
+
+      if (result.token) {
+        localStorage.setItem("authToken", result.token);
+      }
+
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("root", {
+        type: "manual",
+        message:
+          error.message ||
+          "Login failed. Please check your credentials and try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,6 +87,12 @@ const Login = () => {
             className="space-y-6 flex flex-col items-center"
             onSubmit={handleSubmit(onSubmit)}
           >
+            {errors.root && (
+              <div className="bg-red-50 border border-red-300 text-red-700 p-3 rounded-lg w-[80%]">
+                {errors.root.message}
+              </div>
+            )}
+
             <input
               {...register("email", {
                 required: "Email is required",
@@ -94,9 +138,10 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-[80%] py-3 text-lg bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors"
+              disabled={isLoading}
+              className="w-[80%] py-3 text-lg bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors flex justify-center items-center"
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
           <p className="mt-8 text-center text-lg">

@@ -10,6 +10,14 @@ const ProfilePage = () => {
     email: "",
     phone: "",
   });
+  const [passwordUpdateStatus, setPasswordUpdateStatus] = useState({
+    isLoading: false,
+    error: null,
+    success: false,
+  });
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState(null);
 
   const {
     register: registerPersonal,
@@ -23,6 +31,7 @@ const ProfilePage = () => {
     handleSubmit: handleSubmitPassword,
     formState: { errors: errorsPassword },
     watch: watchPassword,
+    reset: resetPassword,
   } = useForm();
 
   const {
@@ -35,27 +44,6 @@ const ProfilePage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Mock booking history data
-  const bookingHistory = [
-    {
-      id: "BK12345",
-      roomType: "Classic Queen",
-      checkIn: "2023-12-15",
-      checkOut: "2023-12-18",
-      amount: "2997",
-      status: "Completed",
-    },
-    {
-      id: "BK12346",
-      roomType: "Family Suite",
-      checkIn: "2024-01-10",
-      checkOut: "2024-01-15",
-      amount: "12495",
-      status: "Upcoming",
-    },
-  ];
-
-  // Load user data from localStorage on component mount
   useEffect(() => {
     const storedName = localStorage.getItem("userName") || "";
     const storedEmail = localStorage.getItem("userEmail") || "";
@@ -67,15 +55,53 @@ const ProfilePage = () => {
       phone: storedPhone,
     });
 
-    // Set form values
     setValuePersonal("fullName", storedName);
     setValuePersonal("email", storedEmail);
     setValuePersonal("phone", storedPhone);
   }, [setValuePersonal]);
 
+  useEffect(() => {
+    if (activeTab === "bookings") {
+      fetchBookingHistory();
+    }
+  }, [activeTab]);
+
+  const fetchBookingHistory = async () => {
+    try {
+      setBookingsLoading(true);
+      setBookingsError(null);
+
+      const token = localStorage.getItem("authToken");
+
+      const response = await fetch(
+        "http://localhost:8000/user/bookinghistory",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error ${response.status}: Failed to fetch booking history`
+        );
+      }
+
+      const data = await response.json();
+      setBookingHistory(data);
+    } catch (error) {
+      console.error("Error fetching booking history:", error);
+      setBookingsError(error.message || "Failed to load booking history");
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
   const onSubmitPersonal = (data) => {
     console.log("Personal info updated:", data);
-    // In a real app, you would send this to your backend
     localStorage.setItem("userName", data.fullName);
     localStorage.setItem("userEmail", data.email);
     localStorage.setItem("userPhone", data.phone);
@@ -89,16 +115,54 @@ const ProfilePage = () => {
     alert("Personal information updated successfully!");
   };
 
-  const onSubmitPassword = (data) => {
-    console.log("Password updated:", data);
-    // In a real app, you would send this to your backend
-    alert("Password updated successfully!");
+  const onSubmitPassword = async (data) => {
+    try {
+      setPasswordUpdateStatus({ isLoading: true, error: null, success: false });
+
+      const response = await fetch(
+        "http://localhost:8000/user/updatepassword",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            password: data.newPassword,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to update password" }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      setPasswordUpdateStatus({ isLoading: false, error: null, success: true });
+      resetPassword();
+      setTimeout(() => {
+        setPasswordUpdateStatus((prev) => ({ ...prev, success: false }));
+      }, 5000);
+    } catch (error) {
+      console.error("Error updating password:", error);
+      setPasswordUpdateStatus({
+        isLoading: false,
+        error: error.message || "An error occurred while updating password",
+        success: false,
+      });
+    }
   };
 
   const onSubmitCard = (data) => {
     console.log("Card added:", data);
-    // In a real app, you would send this to your backend
     alert("Credit card added successfully!");
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toISOString().split("T")[0];
   };
 
   return (
@@ -277,6 +341,32 @@ const ProfilePage = () => {
                     <h2 className="text-2xl font-semibold mb-6">
                       Change Password
                     </h2>
+
+                    {/* Status messages */}
+                    {passwordUpdateStatus.error && (
+                      <div
+                        className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                        role="alert"
+                      >
+                        <strong className="font-bold">Error: </strong>
+                        <span className="block sm:inline">
+                          {passwordUpdateStatus.error}
+                        </span>
+                      </div>
+                    )}
+
+                    {passwordUpdateStatus.success && (
+                      <div
+                        className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                        role="alert"
+                      >
+                        <strong className="font-bold">Success! </strong>
+                        <span className="block sm:inline">
+                          Your password has been updated successfully.
+                        </span>
+                      </div>
+                    )}
+
                     <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
                       <div className="space-y-6 max-w-md">
                         <div className="relative">
@@ -392,9 +482,16 @@ const ProfilePage = () => {
                       </div>
                       <button
                         type="submit"
-                        className="bg-amber-500 text-white py-3 px-6 rounded-md font-medium hover:bg-amber-600 transition-colors mt-6"
+                        className={`bg-amber-500 text-white py-3 px-6 rounded-md font-medium hover:bg-amber-600 transition-colors mt-6 ${
+                          passwordUpdateStatus.isLoading
+                            ? "opacity-70 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disabled={passwordUpdateStatus.isLoading}
                       >
-                        Update Password
+                        {passwordUpdateStatus.isLoading
+                          ? "Updating..."
+                          : "Update Password"}
                       </button>
                     </form>
                   </div>
@@ -540,7 +637,43 @@ const ProfilePage = () => {
                     <h2 className="text-2xl font-semibold mb-6">
                       Booking History
                     </h2>
-                    {bookingHistory.length > 0 ? (
+
+                    {/* Show loading state */}
+                    {bookingsLoading && (
+                      <div className="text-center py-8">
+                        <div
+                          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"
+                          role="status"
+                        >
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        <p className="mt-2 text-gray-600">
+                          Loading your booking history...
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Show error state */}
+                    {bookingsError && (
+                      <div
+                        className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                        role="alert"
+                      >
+                        <strong className="font-bold">Error: </strong>
+                        <span className="block sm:inline">{bookingsError}</span>
+                        <button
+                          className="mt-3 bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded-md"
+                          onClick={fetchBookingHistory}
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Show data when available */}
+                    {!bookingsLoading &&
+                    !bookingsError &&
+                    bookingHistory.length > 0 ? (
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
@@ -567,31 +700,44 @@ const ProfilePage = () => {
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {bookingHistory.map((booking) => (
-                              <tr key={booking.id}>
+                              <tr key={booking.id || booking._id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-amber-500">
-                                  {booking.id}
+                                  {booking.id ||
+                                    booking._id ||
+                                    booking.bookingId ||
+                                    "N/A"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {booking.roomType}
+                                  {booking.roomType || "N/A"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {booking.checkIn}
+                                  {formatDate(booking.checkIn) || "N/A"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                  {booking.checkOut}
+                                  {formatDate(booking.checkOut) || "N/A"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                  Rs. {booking.amount}
+                                  Rs.{" "}
+                                  {booking.amount ||
+                                    booking.totalAmount ||
+                                    "N/A"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span
                                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                      booking.status === "Completed"
+                                      booking.status === "Completed" ||
+                                      booking.status === "completed"
                                         ? "bg-green-100 text-green-800"
-                                        : "bg-blue-100 text-blue-800"
+                                        : booking.status === "Upcoming" ||
+                                          booking.status === "upcoming" ||
+                                          booking.status === "confirmed"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : booking.status === "cancelled"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-gray-100 text-gray-800"
                                     }`}
                                   >
-                                    {booking.status}
+                                    {booking.status || "N/A"}
                                   </span>
                                 </td>
                               </tr>
@@ -599,7 +745,7 @@ const ProfilePage = () => {
                           </tbody>
                         </table>
                       </div>
-                    ) : (
+                    ) : !bookingsLoading && !bookingsError ? (
                       <div className="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
                         <p className="text-gray-500 mb-4">
                           You don't have any booking history yet.
@@ -608,7 +754,7 @@ const ProfilePage = () => {
                           Book a Room
                         </button>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </div>
