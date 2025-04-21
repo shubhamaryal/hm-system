@@ -56,6 +56,11 @@ const SignUp = () => {
       localStorage.setItem("userName", data.fullName);
       localStorage.setItem("userPhone", data.phone);
 
+      if (result.token) {
+        // Check if the signup response includes a token
+        localStorage.setItem("authToken", result.token);
+      }
+
       navigate("/");
     } catch (err) {
       setError(err.message || "An error occurred during registration");

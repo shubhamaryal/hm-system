@@ -4,6 +4,7 @@ import Navbar from "../components/NavBar";
 import { Eye, EyeOff, CreditCard, Clock, User, Lock } from "lucide-react";
 
 const ProfilePage = () => {
+  const [singleBookingDetails, setSingleBookingDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("personal");
   const [userData, setUserData] = useState({
     fullName: "",
@@ -66,25 +67,28 @@ const ProfilePage = () => {
     }
   }, [activeTab]);
 
+  // Example for fetchBookingHistory
   const fetchBookingHistory = async () => {
     try {
       setBookingsLoading(true);
       setBookingsError(null);
 
-      const token = localStorage.getItem("authToken");
+      const headers = getAuthHeaders();
+      console.log("Auth headers being sent:", headers);
 
       const response = await fetch(
         "http://localhost:8000/user/bookinghistory",
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+          headers: headers,
+          credentials: "include", // Add this to include cookies in the request
         }
       );
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Authentication failed. Please login again.");
+        }
         throw new Error(
           `Error ${response.status}: Failed to fetch booking history`
         );
@@ -95,6 +99,46 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Error fetching booking history:", error);
       setBookingsError(error.message || "Failed to load booking history");
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
+  const fetchBookingDetails = async (bookingId) => {
+    try {
+      setBookingsLoading(true);
+      setBookingsError(null);
+      setSingleBookingDetails(null);
+
+      const headers = getAuthHeaders();
+
+      const response = await fetch(
+        `http://localhost:8000/user/bookings/${bookingId}`,
+        {
+          method: "GET",
+          headers: headers,
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to fetch booking details" }));
+        throw new Error(
+          errorData.message ||
+            `Error ${response.status}: Failed to fetch booking details`
+        );
+      }
+
+      const data = await response.json();
+      setSingleBookingDetails(data);
+      console.log("Booking Details:", data);
+    } catch (error) {
+      console.error("Error fetching booking details:", error);
+      setBookingsError(
+        error.message || "Failed to load booking details for this ID"
+      );
     } finally {
       setBookingsLoading(false);
     }
@@ -115,40 +159,75 @@ const ProfilePage = () => {
     alert("Personal information updated successfully!");
   };
 
-  const onSubmitPassword = async (data) => {
-    try {
-      setPasswordUpdateStatus({ isLoading: true, error: null, success: false });
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
 
+    return {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    };
+  };
+
+  const getCookie = (name) => {
+    // For authToken, localStorage is the primary source in your current setup
+    if (name === "authToken") {
+      return localStorage.getItem("authToken");
+    }
+
+    // For other cookies, check in document.cookie
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+
+    return null;
+  };
+
+  const onSubmitPassword = async (data) => {
+    setPasswordUpdateStatus({ isLoading: true, error: null, success: false });
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("Authentication token not found. Please login again.");
+      }
+  
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+  
+      const payload = {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      };
+  
+      console.log("Sending password update payload:", payload);
+  
       const response = await fetch(
         "http://localhost:8000/user/updatepassword",
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            password: data.newPassword,
-          }),
+          headers: headers,
+          credentials: "include",
+          body: JSON.stringify(payload),
         }
       );
-
+  
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Failed to update password" }));
-        throw new Error(errorData.message || `Error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message ||
+          errorData.error ||
+          `Error ${response.status}: Password update failed`
+        );
       }
-
+  
       setPasswordUpdateStatus({ isLoading: false, error: null, success: true });
       resetPassword();
-      setTimeout(() => {
-        setPasswordUpdateStatus((prev) => ({ ...prev, success: false }));
-      }, 5000);
     } catch (error) {
       console.error("Error updating password:", error);
       setPasswordUpdateStatus({
         isLoading: false,
-        error: error.message || "An error occurred while updating password",
+        error: error.message || "Failed to update password",
         success: false,
       });
     }
@@ -177,15 +256,7 @@ const ProfilePage = () => {
             <div className="w-full md:w-1/4">
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-16 h-16 rounded-full bg-amber-500 flex items-center justify-center text-white text-2xl font-bold">
-                    {userData.fullName
-                      ? userData.fullName.charAt(0).toUpperCase()
-                      : "U"}
-                  </div>
                   <div>
-                    <h2 className="text-xl font-semibold">
-                      {userData.fullName || "User"}
-                    </h2>
                     <p className="text-gray-500">
                       {userData.email || "user@example.com"}
                     </p>
@@ -251,27 +322,6 @@ const ProfilePage = () => {
                     </h2>
                     <form onSubmit={handleSubmitPersonal(onSubmitPersonal)}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                          <label className="block text-gray-700 mb-2">
-                            Full Name
-                          </label>
-                          <input
-                            type="text"
-                            className={`w-full border ${
-                              errorsPersonal.fullName
-                                ? "border-red-500"
-                                : "border-gray-300"
-                            } rounded-md p-3`}
-                            {...registerPersonal("fullName", {
-                              required: "Full name is required",
-                            })}
-                          />
-                          {errorsPersonal.fullName && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errorsPersonal.fullName.message}
-                            </p>
-                          )}
-                        </div>
                         <div>
                           <label className="block text-gray-700 mb-2">
                             Email Address
@@ -663,7 +713,7 @@ const ProfilePage = () => {
                         <span className="block sm:inline">{bookingsError}</span>
                         <button
                           className="mt-3 bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded-md"
-                          onClick={fetchBookingHistory}
+                          onClick={fetchBookingHistory} // Ensure this is correctly bound
                         >
                           Try Again
                         </button>
@@ -696,12 +746,24 @@ const ProfilePage = () => {
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                               </th>
+                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {bookingHistory.map((booking) => (
                               <tr key={booking.id || booking._id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-amber-500">
+                                <td
+                                  className="px-6 py-4 whitespace-nowrap text-sm font-medium text-amber-500 cursor-pointer hover:underline"
+                                  onClick={() =>
+                                    fetchBookingDetails(
+                                      booking.id ||
+                                        booking._id ||
+                                        booking.bookingId
+                                    )
+                                  }
+                                >
                                   {booking.id ||
                                     booking._id ||
                                     booking.bookingId ||
@@ -740,6 +802,20 @@ const ProfilePage = () => {
                                     {booking.status || "N/A"}
                                   </span>
                                 </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <button
+                                    onClick={() =>
+                                      fetchBookingDetails(
+                                        booking.id ||
+                                          booking._id ||
+                                          booking.bookingId
+                                      )
+                                    }
+                                    className="text-amber-600 hover:text-amber-800"
+                                  >
+                                    View Details
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -755,6 +831,35 @@ const ProfilePage = () => {
                         </button>
                       </div>
                     ) : null}
+
+                    {/* Display single booking details */}
+                    {singleBookingDetails && (
+                      <div className="mt-8 p-6 bg-white rounded-md shadow-md">
+                        <h3 className="text-xl font-semibold mb-4">
+                          Booking Details
+                        </h3>
+                        <pre>
+                          {JSON.stringify(singleBookingDetails, null, 2)}
+                        </pre>
+                        <button
+                          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded mt-4"
+                          onClick={() => setSingleBookingDetails(null)} // Option to close details
+                        >
+                          Close Details
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Error message for fetching single booking details (optional, if you want a separate display) */}
+                    {bookingsError && singleBookingDetails === null && (
+                      <div
+                        className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4"
+                        role="alert"
+                      >
+                        <strong className="font-bold">Error:</strong>
+                        <span className="block sm:inline">{bookingsError}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
